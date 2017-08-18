@@ -1,46 +1,21 @@
 #-*- coding: utf-8 -*-
 
 import sys
-import re
+import logging
+import json
 
-from konlpy.tag import Twitter
-from konlpy.utils import pprint, csvread
-
-import school.util as util
-import school.dictionary as dictionary
+from school.parser import new_parser_from_csv
+from school.util import pretty_dict
 
 
 def main():
-    csvfile = open('data/comments.csv', 'rb')
-    iterator = iter(csvread(csvfile))
+    logging.basicConfig(level=logging.INFO)
 
-    iterator.next()
+    parser = new_parser_from_csv('data/comments.csv')
 
-    twitter = Twitter()
-
-    for row in iterator:
-        comment = row[0]
-
-        data = twitter.pos(comment, norm=True)
-        data = util.filter_pos(data)
-
-        print('--text--')
-        print(comment)
-        print('--output--')
-
-        for i, d in enumerate(data):
-            r = util.regex_school_prefix(d[0])
-            if r is None:
-                continue
-
-            sample = data[max(0, i-4):i+1]
-
-            prefix = r.group(0)
-            print(prefix)
-            pprint(sample[max(-len(sample), -3):])
-
-
-        sys.stdin.readline()
+    for result in parser:
+        sorted_result = sorted(result.items(), key=lambda x: x[1], reverse=True)
+        print json.dumps(sorted_result[:5], ensure_ascii=False)
 
 
 if __name__ == '__main__':

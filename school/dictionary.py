@@ -3,8 +3,6 @@
 import xlrd
 import re
 
-from konlpy.utils import pprint
-
 import school.types as types
 import school.util as util
 
@@ -40,9 +38,8 @@ def find_school(token, matched_patterns=None, unmatched_patterns=None):
     if len(kind_patterns) > 0:
         matched_patterns.append(re.compile(u'(%s)+.*%s$' % ('|'.join(kind_patterns), level_pattern)))
 
-    if types.NORMAL_SCHOOL_KIND in token.kinds:
-        non_normal = [u'여자', u'과학', u'외국어', u'예술', u'방송통신', u'상업', u'공업', u'병설', u'부설']
-        unmatched_patterns.append(re.compile(u'(%s)' % '|'.join(non_normal)))
+    if token.is_normal_kind():
+        unmatched_patterns.append(util.non_normal_school_pattern)
 
     schools_with_score = []
     for d in data:

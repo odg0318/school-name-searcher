@@ -2,6 +2,7 @@
 
 import re
 import logging
+import time
 
 from konlpy.tag import Twitter
 from konlpy.utils import csvread
@@ -48,7 +49,12 @@ class Parser(object):
         return self.result
 
     def parse(self, row):
+        time_checker = util.TimeChecker()
+        logging.debug('--start--')
+
         locations = util.get_locations_from_comments(row)
+
+        logging.debug(time_checker.check_and_format('location'))
 
         logging.debug('--input--')
         logging.debug(util.pretty_str(row))
@@ -56,9 +62,12 @@ class Parser(object):
         pos_data = self.nlp.pos(row, norm=True)
         pos_data = util.filter_pos(pos_data)
 
+        logging.debug(time_checker.check_and_format('nlp'))
+
         words = [util.remove_non_korean(x[0]) for x in pos_data]
         used_index = 0
 
+        time_checker.check()
         logging.debug('--output--')
         for current_index, word in enumerate(words):
             level = util.get_school_level(word)
@@ -79,7 +88,6 @@ class Parser(object):
                     continue
 
                 school = dictionary.find_school(token)
-
                 if school is None:
                     continue
 
@@ -91,6 +99,9 @@ class Parser(object):
                 yield school
 
                 break
+
+        logging.debug(time_checker.check_and_format('find_school'))
+        logging.debug('--end--')
 
 
 class Token(object):
@@ -125,6 +136,9 @@ class Token(object):
 
     def is_special_kind(self):
         return types.SPECIAL_SCHOOL_KIND in self.kinds
+
+    def is_normal_kind(self):
+        return types.NORMAL_SCHOOL_KIND is self.kinds
 
 
 def new_parser_from_csv(csvpath):

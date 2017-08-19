@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 
 import re
+import time
 
 import school.types as types
 
@@ -8,9 +9,11 @@ normal_school_pattern = re.compile(u'((초|중|고)|(초등|중|고등)학교)$'
 girl_school_pattern = re.compile(u'((여|여자)[가-힇]*(중|고)|여자[가-힇]*(중|고등)학교)$')
 open_school_pattern = re.compile(u'((방송|방통|방송통신)(여|여자)?(중|고)|방송통신(여|여자)?(중|고등)학교)$')
 special_school_pattern = re.compile(u'((과|과학|외|외국어|예|예술|방송|방통|방송통신|상|상업|공|공업)(여|여자)?(중|고)|(과학|외국어|예술|방송통신|상업|공업)(여자)?(중|고등)학교)$')
-attached_school_pattern = re.compile(u'((사대부|부|부설|부속)(여|여자)?(초|중|고)|사범대학(부|부속|부설)(여자)?(초등|중|고등)학교)$')
+attached_school_pattern = re.compile(u'((교대부|사대부|부|부설|부속)(여|여자)?(초|중|고)|(교육대학|사범대학)(부|부속|부설)(여자)?(초등|중|고등)학교)$')
 branch_school_pattern = re.compile(u'분교(장)?$')
 other_school_pattern = re.compile(u'학교$')
+
+non_normal_school_pattern = re.compile(u'(여자|과학|외국어|예술|방송통신|상업|공업|병설|부설)')
 
 special_science_school_pattern = re.compile(u'((과|과학)(여|여자)?(중|고)|과학(여|여자)?(중|고등)학교)$')
 special_foreign_school_pattern = re.compile(u'((외|외국어)(여|여자)?(중|고)|외국어(여|여자)?(중|고등)학교)$')
@@ -23,7 +26,6 @@ middle_school_level_pattern = re.compile(u'(중학교|중)$')
 high_school_level_pattern = re.compile(u'(고등학교|고)$')
 other_school_level_pattern = re.compile(u'학교$')
 
-remove_non_korean_pattern = re.compile(u'[^가-힇\s]*')
 
 # An order of regular expression is very important.
 # OTHER_SCHOOL_LEVEL should be the last.
@@ -99,6 +101,7 @@ def filter_pos(data):
 
 
 def remove_non_korean(x):
+    remove_non_korean_pattern = re.compile(u'[^가-힇\s]*')
     return remove_non_korean_pattern.sub(u'', x)
 
 
@@ -203,3 +206,21 @@ def pretty_str(s):
 
 def pretty_list(l):
     return '[' + pretty_str(','.join(l)) + ']'
+
+
+class TimeChecker(object):
+
+    def __init__(self):
+        self.now = time.time()
+
+    def check(self):
+        new_now = time.time()
+        diff = new_now - self.now
+        self.now = new_now
+        return diff
+
+    def check_and_format(self, name):
+        diff = self.check()
+
+        return '[time checker] %s uses %fs' % (name, diff)
+

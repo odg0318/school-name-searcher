@@ -4,11 +4,7 @@ import sqlite3
 import re
 import os
 
-import school.types as types
 import school.util as util
-
-db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/schools.db')
-conn = sqlite3.connect(db_path)
 
 
 def find_school(token, matched_patterns=None, unmatched_patterns=None):
@@ -27,6 +23,7 @@ def find_school(token, matched_patterns=None, unmatched_patterns=None):
     if token.is_normal_kind():
         unmatched_patterns.append(util.non_normal_school_pattern)
 
+    conn = sqlite3.connect(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/schools.db'))
     cursor = conn.cursor()
 
     cursor.execute('SELECT * FROM schools WHERE name LIKE ? AND name LIKE ?', ('%'+token.text+'%', '%'+level_pattern))

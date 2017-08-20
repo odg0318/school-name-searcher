@@ -2,34 +2,17 @@
 
 import re
 import time
+import json
 
 import school.types as types
 
-normal_school_pattern = re.compile(u'((초|중|고)|(초등|중|고등)학교)$')
-girl_school_pattern = re.compile(u'((여|여자)[가-힇]*(중|고)|여자[가-힇]*(중|고등)학교)$')
-open_school_pattern = re.compile(u'((방송|방통|방송통신)(여|여자)?(중|고)|방송통신(여|여자)?(중|고등)학교)$')
-special_school_pattern = re.compile(u'((과|과학|외|외국어|예|예술|방송|방통|방송통신|상|상업|공|공업)(여|여자)?(중|고)|(과학|외국어|예술|방송통신|상업|공업)(여자)?(중|고등)학교)$')
-attached_school_pattern = re.compile(u'((교대부|사대부|부|부설|부속)(여|여자)?(초|중|고)|(교육대학|사범대학)(부|부속|부설)(여자)?(초등|중|고등)학교)$')
-branch_school_pattern = re.compile(u'분교(장)?$')
-other_school_pattern = re.compile(u'학교$')
 
-non_normal_school_pattern = re.compile(u'(여자|과학|외국어|예술|방송통신|상업|공업|병설|부설)')
-
-special_science_school_pattern = re.compile(u'((과|과학)(여|여자)?(중|고)|과학(여|여자)?(중|고등)학교)$')
-special_foreign_school_pattern = re.compile(u'((외|외국어)(여|여자)?(중|고)|외국어(여|여자)?(중|고등)학교)$')
-special_art_school_pattern = re.compile(u'((예|예술)(여|여자)?(중|고)|예술(여|여자)?(중|고등)학교)$')
-special_commercial_school_pattern = re.compile(u'((상|상업)(여|여자)?(중|고)|상업(여|여자)?(중|고등)학교)$')
-special_technical_school_pattern = re.compile(u'((공|공업)(여|여자)?(중|고)|공업(여|여자)?(중|고등)학교)$')
-
-elementary_school_level_pattern = re.compile(u'(초등학교|초)$')
-middle_school_level_pattern = re.compile(u'(중학교|중)$')
-high_school_level_pattern = re.compile(u'(고등학교|고)$')
-other_school_level_pattern = re.compile(u'학교$')
-
-
-# An order of regular expression is very important.
-# OTHER_SCHOOL_LEVEL should be the last.
 def get_school_level(text):
+    elementary_school_level_pattern = re.compile(u'(초등학교|초)$')
+    middle_school_level_pattern = re.compile(u'(중학교|중)$')
+    high_school_level_pattern = re.compile(u'(고등학교|고)$')
+    other_school_level_pattern = re.compile(u'학교$')
+
     if elementary_school_level_pattern.search(text):
         return types.ELEMENTARY_SCHOOL_LEVEL
 
@@ -45,9 +28,21 @@ def get_school_level(text):
     return types.UNKNOWN_SCHOOL_LEVEL
 
 
-# An order of regular expression is very important.
-# OTHER_SCHOOL_LEVEL should be the last.
 def get_school_kinds(text):
+    normal_school_pattern = re.compile(u'((초|중|고)|(초등|중|고등)학교)$')
+    girl_school_pattern = re.compile(u'((여|여자)[가-힇]*(중|고)|여자[가-힇]*(중|고등)학교)$')
+    open_school_pattern = re.compile(u'((방송|방통|방송통신)(여|여자)?(중|고)|방송통신(여|여자)?(중|고등)학교)$')
+    special_school_pattern = re.compile(u'((과|과학|외|외국어|예|예술|방송|방통|방송통신|상|상업|공|공업)(여|여자)?(중|고)|(과학|외국어|예술|방송통신|상업|공업)(여자)?(중|고등)학교)$')
+    attached_school_pattern = re.compile(u'((교대부|사대부|부|부설|부속)(여|여자)?(초|중|고)|(교육대학|사범대학)(부|부속|부설)(여자)?(초등|중|고등)학교)$')
+    branch_school_pattern = re.compile(u'분교(장)?$')
+    other_school_pattern = re.compile(u'학교$')
+
+    special_science_school_pattern = re.compile(u'((과|과학)(여|여자)?(중|고)|과학(여|여자)?(중|고등)학교)$')
+    special_foreign_school_pattern = re.compile(u'((외|외국어)(여|여자)?(중|고)|외국어(여|여자)?(중|고등)학교)$')
+    special_art_school_pattern = re.compile(u'((예|예술)(여|여자)?(중|고)|예술(여|여자)?(중|고등)학교)$')
+    special_commercial_school_pattern = re.compile(u'((상|상업)(여|여자)?(중|고)|상업(여|여자)?(중|고등)학교)$')
+    special_technical_school_pattern = re.compile(u'((공|공업)(여|여자)?(중|고)|공업(여|여자)?(중|고등)학교)$')
+
     kinds = []
     if girl_school_pattern.search(text):
         kinds.append(types.GIRL_SCHOOL_KIND)
@@ -100,9 +95,9 @@ def filter_pos(data):
     return [x for x in data if x[1] not in filtered_list]
 
 
-def remove_non_korean(x):
-    remove_non_korean_pattern = re.compile(u'[^가-힇\s]*')
-    return remove_non_korean_pattern.sub(u'', x)
+# Removes non-korean characters including garbage values.
+def remove_non_korean(text):
+    return re.sub(ur'[^가-힇\s]*', u'', text)
 
 
 def remove_keywords(text):
@@ -170,31 +165,31 @@ def get_pattern_from_kinds(kinds):
     return patterns
 
 
-def get_locations_from_comments(comment):
+def get_locations_from_text(text):
     locations = []
 
-    locations += re.findall(u'경기|강원|충청북도|충청남도|전라북도|전라남도|경상북도|경상남도|제주', comment)
-    locations += re.findall(u'서울|부산|대구|인천|광주|대전|울산|세종', comment)
-    locations += re.findall(u'성남|수원|안양|안산|용인|광명|평택|과천|오산|시흥|군포|의왕|하남|이천|안성|김포|화성|광주|여주|부천', comment)
-    locations += re.findall(u'고양|의정부|동두천|구리|남양주|파주|양주|포천', comment)
-    locations += re.findall(u'춘천|원주|강릉|동해|태백|속초|삼척', comment)
+    locations += re.findall(u'경기|강원|충청북도|충청남도|전라북도|전라남도|경상북도|경상남도|제주', text)
+    locations += re.findall(u'서울|부산|대구|인천|광주|대전|울산|세종', text)
+    locations += re.findall(u'성남|수원|안양|안산|용인|광명|평택|과천|오산|시흥|군포|의왕|하남|이천|안성|김포|화성|광주|여주|부천', text)
+    locations += re.findall(u'고양|의정부|동두천|구리|남양주|파주|양주|포천', text)
+    locations += re.findall(u'춘천|원주|강릉|동해|태백|속초|삼척', text)
 
-    if u'충북' in comment:
+    if u'충북' in text:
         locations.append(u'충청북도')
 
-    if u'충남' in comment:
+    if u'충남' in text:
         locations.append(u'충청남도')
 
-    if u'전북' in comment:
+    if u'전북' in text:
         locations.append(u'전라북도')
 
-    if u'전남' in comment:
+    if u'전남' in text:
         locations.append(u'전라남도')
 
-    if u'경북' in comment:
+    if u'경북' in text:
         locations.append(u'경상북도')
 
-    if u'경남' in comment:
+    if u'경남' in text:
         locations.append(u'경상남도')
 
     return locations
@@ -206,6 +201,11 @@ def pretty_str(s):
 
 def pretty_list(l):
     return '[' + pretty_str(','.join(l)) + ']'
+
+
+def pretty_result_print(result):
+    sorted_result = sorted(result.items(), key=lambda x: x[1], reverse=True)
+    return '\n'.join(['%s\t%d' % (pretty_str(x[0]), x[1]) for x in sorted_result])
 
 
 class TimeChecker(object):

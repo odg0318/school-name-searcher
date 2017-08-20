@@ -2,7 +2,6 @@
 
 import re
 import logging
-import time
 
 from konlpy.tag import Twitter
 from konlpy.utils import csvread
@@ -52,7 +51,7 @@ class Parser(object):
         time_checker = util.TimeChecker()
         logging.debug('--start--')
 
-        locations = util.get_locations_from_comments(row)
+        locations = util.get_locations_from_text(row)
 
         logging.debug(time_checker.check_and_format('location'))
 
@@ -102,6 +101,12 @@ class Parser(object):
 
         logging.debug(time_checker.check_and_format('find_school'))
         logging.debug('--end--')
+
+    def print_result(self):
+        sorted_result = sorted(self.result.items(), key=lambda x: x[1], reverse=True)
+        logging.info('--result--')
+        logging.info(util.pretty_result_print(self.result))
+
 
 
 class Token(object):

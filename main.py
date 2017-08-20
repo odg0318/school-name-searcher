@@ -13,7 +13,7 @@ def main():
     argparser = argparse.ArgumentParser(description='A program to parse schools from comments.')
     argparser.add_argument('--csvfile', required=True, help='CSV file to parse.')
     argparser.add_argument('--verbose', action='store_true', help='Show all logs.')
-    argparser.add_argument('--no-skip', action='store_true', help='S')
+    argparser.add_argument('--no-skip', action='store_true', help='Debug line by line.')
     args = argparser.parse_args()
 
     if not os.path.exists(args.csvfile):

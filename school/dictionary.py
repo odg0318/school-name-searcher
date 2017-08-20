@@ -1,28 +1,15 @@
 #-*- coding: utf-8 -*-
 
-import xlrd
+import sqlite3
 import re
+import os
 
 import school.types as types
 import school.util as util
 
-ROW_START = 1
+db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/schools.db')
+conn = sqlite3.connect(db_path)
 
-COL_LOCATION = 2 # 주소
-COL_NAME = 4
-COL_PROPERTY = 7 # (일반|자율|특성화|특수목적)고등학교
-COL_TYPE = 9 # 단설, 병설, 부속
-COL_GENDER = 25 # 남, 녀, 남녀공학
-
-workbook = xlrd.open_workbook('data/schools.xlsx')
-sheet = workbook.sheet_by_index(0)
-
-locations = sheet.col_values(COL_LOCATION, ROW_START)
-names = sheet.col_values(COL_NAME, ROW_START)
-properties = sheet.col_values(COL_PROPERTY, ROW_START)
-genders  = sheet.col_values(COL_GENDER, ROW_START)
-
-data = zip(locations, names, properties, genders)
 
 def find_school(token, matched_patterns=None, unmatched_patterns=None):
     if matched_patterns is None:
@@ -34,16 +21,20 @@ def find_school(token, matched_patterns=None, unmatched_patterns=None):
     level_pattern = util.get_pattern_from_level(token.level)
     kind_patterns = util.get_pattern_from_kinds(token.kinds)
 
-    matched_patterns.append(re.compile(u'(%s)+.*%s$' % ('|'.join(token.texts), level_pattern)))
     if len(kind_patterns) > 0:
         matched_patterns.append(re.compile(u'(%s)+.*%s$' % ('|'.join(kind_patterns), level_pattern)))
 
     if token.is_normal_kind():
         unmatched_patterns.append(util.non_normal_school_pattern)
 
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT * FROM schools WHERE name LIKE ? AND name LIKE ?', ('%'+token.text+'%', '%'+level_pattern))
+    rows = cursor.fetchall()
+
     schools_with_score = []
-    for d in data:
-        location, name, prop, gender = d
+    for row in rows:
+        location, name, prop, gender = row
         score = 0
 
         if token.is_girl_kind() and gender == u'녀':

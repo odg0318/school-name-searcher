@@ -10,7 +10,6 @@ import school.dictionary as dictionary
 
 class SchoolParserTestCase(unittest.TestCase):
 
-
     def test_invalid_initialize(self):
         self.assertRaises(Exception, parser.Parser)
 
@@ -33,8 +32,8 @@ class SchoolParserTestCase(unittest.TestCase):
 
         self.assertEqual(types.MIDDLE_SCHOOL_LEVEL, token.level)
         self.assertTrue(types.GIRL_SCHOOL_KIND in token.kinds)
-        self.assertEqual(1, len(token.texts))
-        self.assertEqual(u'하양', list(token.texts)[0])
+        self.assertEqual(2, len(token.text))
+        self.assertEqual(u'하양', token.text)
         self.assertFalse(token.is_skip())
 
 

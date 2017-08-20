@@ -115,11 +115,11 @@ class Token(object):
         joined_text = ''.join(raw_data)
         self.level = util.get_school_level(joined_text)
         self.kinds = util.get_school_kinds(joined_text)
-        self.texts = [util.remove_keywords(joined_text)]
+        self.text = util.remove_keywords(joined_text)
 
 
     def __str__(self):
-        return 'level: %s, kinds: %s, locations: %s texts: %s' % (self.level, self.kinds, util.pretty_list(self.locations), util.pretty_list(self.texts))
+        return 'level: %s, kinds: %s, locations: %s text: %s' % (self.level, self.kinds, util.pretty_list(self.locations), util.pretty_str(self.text))
 
     def has_location_in(self, text):
         if not self.locations:
@@ -128,8 +128,7 @@ class Token(object):
         return self._location_pattern.search(text) is not None
 
     def is_skip(self):
-        valid_texts = [x for x in self.texts if len(x) >= 2]
-        return len(valid_texts) == 0
+        return len(self.text) < 2
 
     def is_girl_kind(self):
         return types.GIRL_SCHOOL_KIND in self.kinds

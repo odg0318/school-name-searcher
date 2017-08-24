@@ -32,7 +32,7 @@ $ docker run --rm -v [path/to/csv]:/application/comments.csv school-parser:lates
   
 ## 테스트
 ```
-  $ python test_school.py
+$ python test_school.py
 ```
 
 ## 실행옵션
